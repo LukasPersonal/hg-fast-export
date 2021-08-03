@@ -94,7 +94,7 @@ def split_dict(dleft, dright, l=[], c=[], r=[], match=file_mismatch):
     """Loop over our repository and find all changed and missing files."""
     for left in dleft.keys():
         right = dright.get(left, None)
-        if right == None:
+        if right is None:
             # we have the file but our parent hasn't: add to left set
             l.append(left)
         elif match(dleft[left], right) or gitmode(dleft.flags(left)) != gitmode(dright.flags(left)):
@@ -102,7 +102,7 @@ def split_dict(dleft, dright, l=[], c=[], r=[], match=file_mismatch):
             c.append(left)
     for right in dright.keys():
         left = dleft.get(right, None)
-        if left == None:
+        if left is None:
             # if parent has file but we don't: add to right set
             r.append(right)
         # change is already handled when comparing child against parent
@@ -150,11 +150,11 @@ def get_author(logmessage, committer, authors):
         first = None
         while i >= 0:
             m = sob_re.match(loglines[i])
-            if m == None: break
+            if m is None: break
             first = m
             i -= 1
         # if the last non-empty line matches our Signed-Off-by regex: extract username
-        if first != None:
+        if first is not None:
             r = fixup_user(first.group(1), authors)
             return r
     return committer
@@ -440,7 +440,7 @@ def export_tags(ui, repo, old_marks, mapping_cache, count, authors, tagsmap):
         rev = int(mapping_cache[hexlify(node)])
 
         ref = revnum_to_revref(rev, old_marks)
-        if ref == None:
+        if ref is None:
             stderr_buffer.write(
               b'Failed to find reference for creating tag %s at r%d\n' % (tag, rev)
             )
@@ -460,7 +460,7 @@ def load_mapping(name, filename, mapping_is_raw):
 
     def parse_raw_line(line):
         m = raw_regexp.match(line)
-        if m == None:
+        if m is None:
             return None
         return (m.group(1).strip(), m.group(2).strip())
 
@@ -473,7 +473,7 @@ def load_mapping(name, filename, mapping_is_raw):
 
     def parse_quoted_line(line):
         m = quoted_regexp.match(line)
-        if m == None:
+        if m is None:
             return
 
         return (process_unicode_escape_sequences(m.group(1)),
@@ -494,7 +494,7 @@ def load_mapping(name, filename, mapping_is_raw):
         elif line == b'' or line[0:1] == b'#':
             continue
         m = parse_raw_line(line) if mapping_is_raw else parse_quoted_line(line)
-        if m == None:
+        if m is None:
             sys.stderr.write('Invalid file format in [%s], line %d\n' % (filename, l))
             continue
         # put key:value in cache, key without ^:
@@ -689,13 +689,13 @@ if __name__ == '__main__':
 
     m = -1
     auto_sanitize = options.auto_sanitize
-    if options.max != None: m = options.max
+    if options.max is not None: m = options.max
 
-    if options.marksfile == None: bail(parser, '--marks')
-    if options.mappingfile == None: bail(parser, '--mapping')
-    if options.headsfile == None: bail(parser, '--heads')
-    if options.statusfile == None: bail(parser, '--status')
-    if options.repourl == None: bail(parser, '--repo')
+    if options.marksfile is None: bail(parser, '--marks')
+    if options.mappingfile is None: bail(parser, '--mapping')
+    if options.headsfile is None: bail(parser, '--heads')
+    if options.statusfile is None: bail(parser, '--status')
+    if options.repourl is None: bail(parser, '--repo')
 
     if options.subrepo_map:
         if not os.path.exists(options.subrepo_map):
@@ -706,36 +706,36 @@ if __name__ == '__main__':
                                           options.subrepo_map, False)
 
     a = {}
-    if options.authorfile != None:
+    if options.authorfile is not None:
         a = load_mapping('authors', options.authorfile, options.raw_mappings)
 
     b = {}
-    if options.branchesfile != None:
+    if options.branchesfile is not None:
         b = load_mapping('branches', options.branchesfile, options.raw_mappings)
 
     t = {}
-    if options.tagsfile != None:
+    if options.tagsfile is not None:
         t = load_mapping('tags', options.tagsfile, options.raw_mappings)
 
-    if options.default_branch != None:
+    if options.default_branch is not None:
         set_default_branch(options.default_branch)
 
-    if options.origin_name != None:
+    if options.origin_name is not None:
         set_origin_name(options.origin_name)
 
     encoding = ''
-    if options.encoding != None:
+    if options.encoding is not None:
         encoding = options.encoding
 
     fn_encoding = encoding
-    if options.fn_encoding != None:
+    if options.fn_encoding is not None:
         fn_encoding = options.fn_encoding
 
     plugins = []
-    if options.plugins != None:
+    if options.plugins is not None:
         plugins += options.plugins
 
-    if options.filter_contents != None:
+    if options.filter_contents is not None:
         plugins += ['shell_filter_file_contents='+options.filter_contents]
 
     plugins_dict = {}  # type: ignore

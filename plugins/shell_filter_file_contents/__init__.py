@@ -20,7 +20,7 @@ class Filter:
         filename = file_data['filename']
         filter_cmd = self.filter_contents + \
             [filename, node.hex(file_ctx.filenode()),
-                                '1' if file_ctx.isbinary() else '0']
+             '1' if file_ctx.isbinary() else '0']
         try:
             filter_proc = subprocess.Popen(
                 filter_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)

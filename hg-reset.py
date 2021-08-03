@@ -49,7 +49,7 @@ def get_branches(ui, repo, heads_cache, marks_cache, mapping_cache, max):
         del stale[branch]
         git_sha1 = get_git_sha1(branch)
         cache_sha1 = marks_cache.get(b"%d" % (int(rev)+1))
-        if git_sha1 != None and git_sha1 == cache_sha1:
+        if git_sha1 is not None and git_sha1 == cache_sha1:
             unchanged.append([branch, cache_sha1, rev, desc.split(b'\n')[0], user])
         else:
             changed.append([branch, cache_sha1, rev, desc.split(b'\n')[0], user])
@@ -101,12 +101,12 @@ if __name__ == '__main__':
 
     (options, args) = parser.parse_args()
 
-    if options.marksfile == None: bail(parser, '--marks option')
-    if options.mappingfile == None: bail(parser, '--mapping option')
-    if options.headsfile == None: bail(parser, '--heads option')
-    if options.statusfile == None: bail(parser, '--status option')
-    if options.repourl == None: bail(parser, '--repo option')
-    if options.revision == None: bail(parser, '-R/--revision')
+    if options.marksfile is None: bail(parser, '--marks option')
+    if options.mappingfile is None: bail(parser, '--mapping option')
+    if options.headsfile is None: bail(parser, '--heads option')
+    if options.statusfile is None: bail(parser, '--status option')
+    if options.repourl is None: bail(parser, '--repo option')
+    if options.revision is None: bail(parser, '-R/--revision')
 
     heads_cache = load_cache(options.headsfile)
     marks_cache = load_cache(options.marksfile, mangle_mark)

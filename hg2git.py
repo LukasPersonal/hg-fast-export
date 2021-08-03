@@ -9,7 +9,7 @@ import subprocess
 import sys
 
 from mercurial import error as hgerror
-from mercurial import hg, templatefilters, ui, util
+from mercurial import hg, templatefilters, ui
 from mercurial.scmutil import binnode, revsymbol
 
 PY2 = sys.version_info.major < 3
@@ -52,12 +52,12 @@ def setup_repo(url):
 
 def fixup_user(user, authors):
     user = user.strip(b"\"")
-    if authors != None:
+    if authors is not None:
         # if we have an authors table, try to get mapping
         # by defaulting to the current value of 'user'
         user = authors.get(user, user)
     name, mail, m = b'', b'', user_re.match(user)
-    if m == None:
+    if m is None:
         # if we don't have 'Name <mail>' syntax, extract name
         # and mail from hg helpers. this seems to work pretty well.
         # if email doesn't contain @, replace it with devnull@localhost
@@ -71,7 +71,7 @@ def fixup_user(user, authors):
 
     # remove any silly quoting from username
     m2 = user_clean_re.match(name)
-    if m2 != None:
+    if m2 is not None:
         name = m2.group(1)
     return b'%s %s' % (name, mail)
 
@@ -118,7 +118,7 @@ def load_cache(filename, get_key=mangle_key):
     for line in f.readlines():
         l += 1
         fields = line.split(b' ')
-        if fields == None or not len(fields) == 2 or fields[0][0:1] != b':':
+        if fields is None or not len(fields) == 2 or fields[0][0:1] != b':':
             sys.stderr.write('Invalid file format in [%s], line %d\n' % (filename, l))
             continue
         # put key:value in cache, key without ^:
@@ -144,7 +144,7 @@ def get_git_sha1(name, type='heads'):
         ref = "refs/%s/%s" % (type, name.decode('utf8'))
         l = subprocess.check_output(["git", "rev-parse", "--verify",
                                    "--quiet", ref.encode('utf8')])
-        if l == None or len(l) == 0:
+        if l is None or len(l) == 0:
             return None
         return l[0:40]
     except subprocess.CalledProcessError:
