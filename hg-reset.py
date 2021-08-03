@@ -7,7 +7,7 @@ import sys
 from binascii import hexlify
 from optparse import OptionParser
 
-from hg2git import get_changeset,get_git_sha1,load_cache,setup_repo
+from hg2git import get_changeset, get_git_sha1, load_cache, setup_repo
 from mercurial import node
 
 
