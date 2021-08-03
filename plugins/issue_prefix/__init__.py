@@ -6,6 +6,7 @@ import re
 def build_filter(args):
     return Filter(args)
 
+
 class Filter:
     def __init__(self, args):
         if not isinstance(args, bytes):

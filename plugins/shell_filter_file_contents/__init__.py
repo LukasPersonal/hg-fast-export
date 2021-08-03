@@ -18,11 +18,14 @@ class Filter:
         d = file_data['data']
         file_ctx = file_data['file_ctx']
         filename = file_data['filename']
-        filter_cmd = self.filter_contents + [filename, node.hex(file_ctx.filenode()), '1' if file_ctx.isbinary() else '0']
+        filter_cmd = self.filter_contents + \
+            [filename, node.hex(file_ctx.filenode()),
+                                '1' if file_ctx.isbinary() else '0']
         try:
-            filter_proc = subprocess.Popen(filter_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+            filter_proc = subprocess.Popen(
+                filter_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
             d, _ = filter_proc.communicate(d)
-        except:
+        except:  # noqa: E722
             sys.stderr.write('Running filter-contents %s:\n' % filter_cmd)
             raise
         filter_ret = filter_proc.poll()

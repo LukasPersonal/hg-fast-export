@@ -19,7 +19,7 @@ class Filter:
         rev_parents = commit_data['parents']
         if (hg_hash == self.starting_commit_hash
                 or any(rp in self.branch_parents for rp in rev_parents)
-                ):
+            ):
             self.branch_parents.add(rev)
             commit_data['branch'] = self.branch_name
             sys.stderr.write('\nchanging r%s to branch %r\n' % (rev, self.branch_name))
