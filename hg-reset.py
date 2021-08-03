@@ -3,11 +3,13 @@
 # Copyright (c) 2007, 2008 Rocco Rutte <pdmef@gmx.net> and others.
 # License: GPLv2
 
-from mercurial import node
-from hg2git import setup_repo,load_cache,get_changeset,get_git_sha1
-from optparse import OptionParser
 import sys
 from binascii import hexlify
+from optparse import OptionParser
+
+from hg2git import get_changeset,get_git_sha1,load_cache,setup_repo
+from mercurial import node
+
 
 def heads(ui,repo,start=None,stop=None,max=None):
   # this is copied from mercurial/revlog.py and differs only in

@@ -9,8 +9,8 @@ import subprocess
 import sys
 
 from mercurial import error as hgerror
-from mercurial import hg,templatefilters,ui,util
-from mercurial.scmutil import binnode,revsymbol
+from mercurial import hg, templatefilters, ui, util
+from mercurial.scmutil import binnode, revsymbol
 
 PY2 = sys.version_info.major < 3
 if PY2:
