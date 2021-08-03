@@ -1,4 +1,4 @@
-#Pipe contents of each exported file through FILTER_CONTENTS <file-path> <hg-hash> <is-binary>"
+# Pipe contents of each exported file through FILTER_CONTENTS <file-path> <hg-hash> <is-binary>"
 import shlex
 import subprocess
 import sys
@@ -9,11 +9,12 @@ from mercurial import node
 def build_filter(args):
     return Filter(args)
 
+
 class Filter:
     def __init__(self, args):
         self.filter_contents = shlex.split(args)
 
-    def file_data_filter(self,file_data):
+    def file_data_filter(self, file_data):
         d = file_data['data']
         file_ctx = file_data['file_ctx']
         filename = file_data['filename']
