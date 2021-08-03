@@ -1,7 +1,7 @@
 from __future__ import print_function
 
-import sys, re
-
+import re
+import sys
 
 def build_filter(args):
     if re.match(r'([A-Fa-f0-9]{40}(,|$))+$', args):

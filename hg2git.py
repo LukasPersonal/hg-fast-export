@@ -3,14 +3,14 @@
 # Copyright (c) 2007, 2008 Rocco Rutte <pdmef@gmx.net> and others.
 # License: MIT <http://www.opensource.org/licenses/mit-license.php>
 
-from mercurial import hg,util,ui,templatefilters
-from mercurial import error as hgerror
-from mercurial.scmutil import revsymbol,binnode
-
-import re
 import os
-import sys
+import re
 import subprocess
+import sys
+
+from mercurial import error as hgerror
+from mercurial import hg,templatefilters,ui,util
+from mercurial.scmutil import binnode,revsymbol
 
 PY2 = sys.version_info.major < 3
 if PY2:

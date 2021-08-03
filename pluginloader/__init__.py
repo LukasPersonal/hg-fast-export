@@ -1,5 +1,6 @@
-import os
 import imp
+import os
+
 PluginFolder = os.path.join(os.path.dirname(os.path.realpath(__file__)),"..","plugins")
 MainModule = "__init__"
 

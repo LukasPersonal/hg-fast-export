@@ -1,7 +1,9 @@
-import sys, os, subprocess
+import os
+import subprocess
+import sys
+from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import TestCase
-from pathlib import Path
 
 
 class CommitDropTest(TestCase):

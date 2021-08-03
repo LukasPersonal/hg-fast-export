@@ -1,8 +1,10 @@
 #Pipe contents of each exported file through FILTER_CONTENTS <file-path> <hg-hash> <is-binary>"
-import subprocess
 import shlex
+import subprocess
 import sys
+
 from mercurial import node
+
 
 def build_filter(args):
     return Filter(args)
