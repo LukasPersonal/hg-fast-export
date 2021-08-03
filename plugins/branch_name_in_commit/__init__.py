@@ -1,6 +1,7 @@
 def build_filter(args):
     return Filter(args)
 
+
 class Filter:
     def __init__(self, args):
         args = {arg: True for arg in args.split(',')}

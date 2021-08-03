@@ -2,13 +2,15 @@
 """__init__.py"""
 import re
 
+
 def build_filter(args):
     return Filter(args)
+
 
 class Filter:
     def __init__(self, args):
         if not isinstance(args, bytes):
-            args = args.encode('utf8') 
+            args = args.encode('utf8')
         self.prefix = args
 
     def commit_message_filter(self, commit_data):

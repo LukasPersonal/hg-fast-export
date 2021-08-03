@@ -1,7 +1,9 @@
 import sys
 
+
 def build_filter(args):
     return Filter(args)
+
 
 class Filter:
 

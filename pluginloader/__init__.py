@@ -1,7 +1,9 @@
-import os
 import imp
-PluginFolder = os.path.join(os.path.dirname(os.path.realpath(__file__)),"..","plugins")
+import os
+
+PluginFolder = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "plugins")
 MainModule = "__init__"
+
 
 def get_plugin(name, plugin_path):
     search_dirs = [PluginFolder]
@@ -14,6 +16,7 @@ def get_plugin(name, plugin_path):
         info = imp.find_module(MainModule, [location])
         return {"name": name, "info": info, "path": location}
     raise Exception("Could not find plugin with name " + name)
+
 
 def load_plugin(plugin):
     return imp.load_module(MainModule, *plugin["info"])
