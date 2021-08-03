@@ -87,17 +87,17 @@ if __name__ == '__main__':
     parser = OptionParser()
 
     parser.add_option("--marks", dest="marksfile",
-        help="File to read git-fast-import's marks from")
+                      help="File to read git-fast-import's marks from")
     parser.add_option("--mapping", dest="mappingfile",
-        help="File to read last run's hg-to-git SHA1 mapping")
+                      help="File to read last run's hg-to-git SHA1 mapping")
     parser.add_option("--heads", dest="headsfile",
-        help="File to read last run's git heads from")
+                      help="File to read last run's git heads from")
     parser.add_option("--status", dest="statusfile",
-        help="File to read status from")
+                      help="File to read status from")
     parser.add_option("-r", "--repo", dest="repourl",
-        help="URL of repo to import")
+                      help="URL of repo to import")
     parser.add_option("-R", "--revision", type=int, dest="revision",
-        help="Revision to reset to")
+                      help="Revision to reset to")
 
     (options, args) = parser.parse_args()
 
