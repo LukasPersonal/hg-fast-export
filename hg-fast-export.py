@@ -85,44 +85,44 @@ def revnum_to_revref(rev, old_marks):
     return old_marks.get(rev) or b':%d' % (rev+1)
 
 
-def file_mismatch(f1,f2):
+def file_mismatch(f1, f2):
     """See if two revisions of a file are not equal."""
     return node.hex(f1)!=node.hex(f2)
 
 
-def split_dict(dleft,dright,l=[],c=[],r=[],match=file_mismatch):
+def split_dict(dleft, dright, l=[], c=[], r=[], match=file_mismatch):
     """Loop over our repository and find all changed and missing files."""
     for left in dleft.keys():
-        right=dright.get(left,None)
+        right=dright.get(left, None)
         if right==None:
             # we have the file but our parent hasn't: add to left set
             l.append(left)
-        elif match(dleft[left],right) or gitmode(dleft.flags(left))!=gitmode(dright.flags(left)):
+        elif match(dleft[left], right) or gitmode(dleft.flags(left))!=gitmode(dright.flags(left)):
             # we have it but checksums mismatch: add to center set
             c.append(left)
     for right in dright.keys():
-        left=dleft.get(right,None)
+        left=dleft.get(right, None)
         if left==None:
             # if parent has file but we don't: add to right set
             r.append(right)
         # change is already handled when comparing child against parent
-    return l,c,r
+    return l, c, r
 
 
-def get_filechanges(repo,revision,parents,mleft):
+def get_filechanges(repo, revision, parents, mleft):
     """Given some repository and revision, find all changed/deleted files."""
-    l,c,r=[],[],[]
+    l, c, r=[], [], []
     for p in parents:
         if p<0: continue
-        mright=revsymbol(repo,b"%d" %p).manifest()
-        l,c,r=split_dict(mleft,mright,l,c,r)
+        mright=revsymbol(repo, b"%d" %p).manifest()
+        l, c, r=split_dict(mleft, mright, l, c, r)
     l.sort()
     c.sort()
     r.sort()
-    return l,c,r
+    return l, c, r
 
 
-def get_author(logmessage,committer,authors):
+def get_author(logmessage, committer, authors):
     """As git distincts between author and committer of a patch, try to
     extract author by detecting Signed-off-by lines.
 
@@ -155,7 +155,7 @@ def get_author(logmessage,committer,authors):
             i-=1
         # if the last non-empty line matches our Signed-Off-by regex: extract username
         if first!=None:
-            r=fixup_user(first.group(1),authors)
+            r=fixup_user(first.group(1), authors)
             return r
     return committer
 
@@ -171,15 +171,15 @@ def remove_gitmodules(ctx):
     wr(b'D .gitmodules')
 
 
-def refresh_git_submodule(name,subrepo_info):
-    wr(b'M 160000 %s %s' % (subrepo_info[1],name))
+def refresh_git_submodule(name, subrepo_info):
+    wr(b'M 160000 %s %s' % (subrepo_info[1], name))
     stderr_buffer.write(
       b"Adding/updating submodule %s, revision %s\n" % (name, subrepo_info[1])
     )
     return b'[submodule "%s"]\n\tpath = %s\n\turl = %s\n' % (name, name, subrepo_info[0])
 
 
-def refresh_hg_submodule(name,subrepo_info):
+def refresh_hg_submodule(name, subrepo_info):
     gitRepoLocation=submodule_mappings[name] + b"/.git"
 
     # Populate the cache to map mercurial revision to git revision
@@ -188,17 +188,17 @@ def refresh_hg_submodule(name,subrepo_info):
                              load_cache(gitRepoLocation+b"/hg2git-marks",
                                         lambda s: int(s)-1))
 
-    (mapping_cache,marks_cache)=subrepo_cache[name]
+    (mapping_cache, marks_cache)=subrepo_cache[name]
     subrepo_hash=subrepo_info[1]
     if subrepo_hash in mapping_cache:
         revnum=mapping_cache[subrepo_hash]
         gitSha=marks_cache[int(revnum)]
-        wr(b'M 160000 %s %s' % (gitSha,name))
+        wr(b'M 160000 %s %s' % (gitSha, name))
         stderr_buffer.write(
           b"Adding/updating submodule %s, revision %s->%s\n"
           % (name, subrepo_hash, gitSha)
         )
-        return b'[submodule "%s"]\n\tpath = %s\n\turl = %s\n' % (name,name,
+        return b'[submodule "%s"]\n\tpath = %s\n\turl = %s\n' % (name, name,
           submodule_mappings[name])
     else:
         stderr_buffer.write(
@@ -213,11 +213,11 @@ def refresh_gitmodules(ctx):
     remove_gitmodules(ctx)
     gitmodules=b""
     # Create the .gitmodules file and all submodules
-    for name,subrepo_info in ctx.substate.items():
+    for name, subrepo_info in ctx.substate.items():
         if subrepo_info[2]==b'git':
-            gitmodules+=refresh_git_submodule(name,subrepo_info)
+            gitmodules+=refresh_git_submodule(name, subrepo_info)
         elif submodule_mappings and name in submodule_mappings:
-            gitmodules+=refresh_hg_submodule(name,subrepo_info)
+            gitmodules+=refresh_hg_submodule(name, subrepo_info)
 
     if len(gitmodules):
         wr(b'M 100644 inline .gitmodules')
@@ -225,7 +225,7 @@ def refresh_gitmodules(ctx):
         wr(gitmodules)
 
 
-def export_file_contents(ctx,manifest,files,hgtags,encoding='',plugins={}):
+def export_file_contents(ctx, manifest, files, hgtags, encoding='', plugins={}):
     count=0
     max=len(files)
     is_submodules_refreshed=False
@@ -250,7 +250,7 @@ def export_file_contents(ctx,manifest,files,hgtags,encoding='',plugins={}):
         d=file_ctx.data()
 
         if plugins and plugins['file_data_filters']:
-            file_data = {'filename':filename,'file_ctx':file_ctx,'data':d}
+            file_data = {'filename': filename, 'file_ctx': file_ctx, 'data': d}
             for filter in plugins['file_data_filters']:
                 filter(file_data)
             d=file_data['data']
@@ -263,12 +263,12 @@ def export_file_contents(ctx,manifest,files,hgtags,encoding='',plugins={}):
         wr(d)
         count+=1
         if count%cfg_export_boundary==0:
-            stderr_buffer.write(b'Exported %d/%d files\n' % (count,max))
+            stderr_buffer.write(b'Exported %d/%d files\n' % (count, max))
     if max>cfg_export_boundary:
-        stderr_buffer.write(b'Exported %d/%d files\n' % (count,max))
+        stderr_buffer.write(b'Exported %d/%d files\n' % (count, max))
 
 
-def sanitize_name(name,what="branch", mapping={}):
+def sanitize_name(name, what="branch", mapping={}):
     """Sanitize input roughly according to git-check-ref-format(1)"""
 
     # NOTE: Do not update this transform to work around
@@ -290,8 +290,8 @@ def sanitize_name(name,what="branch", mapping={}):
         return name
 
     if not auto_sanitize:
-        return mapping.get(name,name)
-    n=mapping.get(name,name)
+        return mapping.get(name, name)
+    n=mapping.get(name, name)
     p = re.compile(b"([^a-zA-Z0-9-_/]|[\.\.])")
     n=p.sub(b'_', n)
     p = re.compile(b"([\/]{2,})")
@@ -314,8 +314,8 @@ def strip_leading_slash(filename):
     return filename
 
 
-def export_commit(ui,repo,revision,old_marks,max,count,authors,
-                  branchesmap,sob,brmap,hgtags,encoding='',fn_encoding='',
+def export_commit(ui, repo, revision, old_marks, max, count, authors,
+                  branchesmap, sob, brmap, hgtags, encoding='', fn_encoding='',
                   plugins={}):
     def get_branchname(name):
         if name in brmap:
@@ -324,15 +324,15 @@ def export_commit(ui,repo,revision,old_marks,max,count,authors,
         brmap[name]=n
         return n
 
-    (revnode,_,user,(time,timezone),files,desc,branch,extra)=get_changeset(ui,repo,revision,authors,encoding)
+    (revnode, _, user, (time, timezone), files, desc, branch, extra)=get_changeset(ui, repo, revision, authors, encoding)
     if repo[revnode].hidden():
         return count
 
     branch=get_branchname(branch)
 
     parents = [p for p in repo.changelog.parentrevs(revision) if p >= 0]
-    author = get_author(desc,user,authors)
-    hg_hash=revsymbol(repo,b"%d" % revision).hex()
+    author = get_author(desc, user, authors)
+    hg_hash=revsymbol(repo, b"%d" % revision).hex()
 
     if plugins and plugins['commit_message_filters']:
         commit_data = {'branch': branch, 'parents': parents,
@@ -353,15 +353,15 @@ def export_commit(ui,repo,revision,old_marks,max,count,authors,
     wr(b'commit refs/heads/%s' % branch)
     wr(b'mark :%d' % (revision+1))
     if sob:
-        wr(b'author %s %d %s' % (author,time,timezone))
-    wr(b'committer %s %d %s' % (user,time,timezone))
+        wr(b'author %s %d %s' % (author, time, timezone))
+    wr(b'committer %s %d %s' % (user, time, timezone))
     wr(b'data %d' % (len(desc)+1)) # wtf?
     wr(desc)
     wr()
 
     ctx=revsymbol(repo, b"%d" % revision)
     man=ctx.manifest()
-    added,changed,removed,type=[],[],[],''
+    added, changed, removed, type=[], [], [], ''
 
     if len(parents) == 0:
         # first revision: feed in full manifest
@@ -374,15 +374,15 @@ def export_commit(ui,repo,revision,old_marks,max,count,authors,
             # later non-merge revision: feed in changed manifest
             # if we have exactly one parent, just take the changes from the
             # manifest without expensively comparing checksums
-            f=repo.status(parents[0],revnode)
-            added,changed,removed=f.added,f.modified,f.removed
+            f=repo.status(parents[0], revnode)
+            added, changed, removed=f.added, f.modified, f.removed
             type='simple delta'
         else: # a merge with two parents
             wr(b'merge %s' % revnum_to_revref(parents[1], old_marks))
             # later merge revision: feed in changed manifest
             # for many files comparing checksums is expensive so only do it for
             # merges where we really need it due to hg's revlog logic
-            added,changed,removed=get_filechanges(repo,revision,parents,man)
+            added, changed, removed=get_filechanges(repo, revision, parents, man)
             type='thorough delta'
 
     stderr_buffer.write(
@@ -398,38 +398,38 @@ def export_commit(ui,repo,revision,old_marks,max,count,authors,
             remove_gitmodules(ctx)
         wr(b'D %s' % filename)
 
-    export_file_contents(ctx,man,added,hgtags,fn_encoding,plugins)
-    export_file_contents(ctx,man,changed,hgtags,fn_encoding,plugins)
+    export_file_contents(ctx, man, added, hgtags, fn_encoding, plugins)
+    export_file_contents(ctx, man, changed, hgtags, fn_encoding, plugins)
     wr()
 
     return checkpoint(count)
 
 
-def export_note(ui,repo,revision,count,authors,encoding,is_first):
-    (revnode,_,user,(time,timezone),_,_,_,_)=get_changeset(ui,repo,revision,authors,encoding)
+def export_note(ui, repo, revision, count, authors, encoding, is_first):
+    (revnode, _, user, (time, timezone), _, _, _, _)=get_changeset(ui, repo, revision, authors, encoding)
     if repo[revnode].hidden():
         return count
 
     parents = [p for p in repo.changelog.parentrevs(revision) if p >= 0]
 
     wr(b'commit refs/notes/hg')
-    wr(b'committer %s %d %s' % (user,time,timezone))
+    wr(b'committer %s %d %s' % (user, time, timezone))
     wr(b'data 0')
     if is_first:
         wr(b'from refs/notes/hg^0')
     wr(b'N inline :%d' % (revision+1))
-    hg_hash=revsymbol(repo,b"%d" % revision).hex()
+    hg_hash=revsymbol(repo, b"%d" % revision).hex()
     wr(b'data %d' % (len(hg_hash)))
     wr_no_nl(hg_hash)
     wr()
     return checkpoint(count)
 
 
-def export_tags(ui,repo,old_marks,mapping_cache,count,authors,tagsmap):
+def export_tags(ui, repo, old_marks, mapping_cache, count, authors, tagsmap):
     l=repo.tagslist()
-    for tag,node in l:
+    for tag, node in l:
         # Remap the branch name
-        tag=sanitize_name(tag,"tag",tagsmap)
+        tag=sanitize_name(tag, "tag", tagsmap)
         # ignore latest revision
         if tag==b'tip': continue
         # ignore tags to nodes that are missing (ie, 'in the future')
@@ -483,7 +483,7 @@ def load_mapping(name, filename, mapping_is_raw):
     if not os.path.exists(filename):
         sys.stderr.write('Could not open mapping file [%s]\n' % (filename))
         return cache
-    f=open(filename,'rb')
+    f=open(filename, 'rb')
     l=0
     a=0
     for line in f.readlines():
@@ -495,7 +495,7 @@ def load_mapping(name, filename, mapping_is_raw):
             continue
         m=parse_raw_line(line) if mapping_is_raw else parse_quoted_line(line)
         if m==None:
-            sys.stderr.write('Invalid file format in [%s], line %d\n' % (filename,l))
+            sys.stderr.write('Invalid file format in [%s], line %d\n' % (filename, l))
             continue
         # put key:value in cache, key without ^:
         cache[m[0]]=m[1]
@@ -515,7 +515,7 @@ def branchtip(repo, heads):
     return tip
 
 
-def verify_heads(ui,repo,cache,force,ignore_unnamed_heads,branchesmap):
+def verify_heads(ui, repo, cache, force, ignore_unnamed_heads, branchesmap):
     branches={}
     for bn, heads in repo.branchmap().iteritems():
         branches[bn] = branchtip(repo, heads)
@@ -523,9 +523,9 @@ def verify_heads(ui,repo,cache,force,ignore_unnamed_heads,branchesmap):
     l.sort()
 
     # get list of hg's branches to verify, don't take all git has
-    for _,_,b in l:
+    for _, _, b in l:
         b=get_branch(b)
-        sanitized_name=sanitize_name(b,"branch",branchesmap)
+        sanitized_name=sanitize_name(b, "branch", branchesmap)
         sha1=get_git_sha1(sanitized_name)
         c=cache.get(sanitized_name)
         if sha1!=c:
@@ -539,8 +539,8 @@ def verify_heads(ui,repo,cache,force,ignore_unnamed_heads,branchesmap):
     t={}
     unnamed_heads=False
     for h in repo.filtered(b'visible').heads():
-        (_,_,_,_,_,_,branch,_)=get_changeset(ui,repo,h)
-        if t.get(branch,False):
+        (_, _, _, _, _, _, branch, _)=get_changeset(ui, repo, h)
+        if t.get(branch, False):
             stderr_buffer.write(
               b'Error: repository has an unnamed head: hg r%d\n'
               % repo.changelog.rev(h)
@@ -552,9 +552,9 @@ def verify_heads(ui,repo,cache,force,ignore_unnamed_heads,branchesmap):
     return True
 
 
-def hg2git(repourl,m,marksfile,mappingfile,headsfile,tipfile,
-           authors={},branchesmap={},tagsmap={},
-           sob=False,force=False,ignore_unnamed_heads=False,hgtags=False,notes=False,encoding='',fn_encoding='',
+def hg2git(repourl, m, marksfile, mappingfile, headsfile, tipfile,
+           authors={}, branchesmap={}, tagsmap={},
+           sob=False, force=False, ignore_unnamed_heads=False, hgtags=False, notes=False, encoding='', fn_encoding='',
            plugins={}):
     def check_cache(filename, contents):
         if len(contents) == 0:
@@ -562,7 +562,7 @@ def hg2git(repourl,m,marksfile,mappingfile,headsfile,tipfile,
 
     _max=int(m)
 
-    old_marks=load_cache(marksfile,lambda s: int(s)-1)
+    old_marks=load_cache(marksfile, lambda s: int(s)-1)
     mapping_cache=load_cache(mappingfile)
     heads_cache=load_cache(headsfile)
     state_cache=load_cache(tipfile)
@@ -573,9 +573,9 @@ def hg2git(repourl,m,marksfile,mappingfile,headsfile,tipfile,
                              (headsfile, state_cache)]:
             check_cache(name, data)
 
-    ui,repo=setup_repo(repourl)
+    ui, repo=setup_repo(repourl)
 
-    if not verify_heads(ui,repo,heads_cache,force,ignore_unnamed_heads,branchesmap):
+    if not verify_heads(ui, repo, heads_cache, force, ignore_unnamed_heads, branchesmap):
         return 1
 
     try:
@@ -583,21 +583,21 @@ def hg2git(repourl,m,marksfile,mappingfile,headsfile,tipfile,
     except AttributeError:
         tip=len(repo)
 
-    min=int(state_cache.get(b'tip',0))
+    min=int(state_cache.get(b'tip', 0))
     max=_max
     if _max<0 or max>tip:
         max=tip
 
-    for rev in range(0,max):
-        (revnode,_,_,_,_,_,_,_)=get_changeset(ui,repo,rev,authors)
+    for rev in range(0, max):
+        (revnode, _, _, _, _, _, _, _)=get_changeset(ui, repo, rev, authors)
         if repo[revnode].hidden():
             continue
         mapping_cache[hexlify(revnode)] = b"%d" % rev
 
     if submodule_mappings:
         # Make sure that all mercurial submodules are registered in the submodule-mappings file
-        for rev in range(0,max):
-            ctx=revsymbol(repo,b"%d" % rev)
+        for rev in range(0, max):
+            ctx=revsymbol(repo, b"%d" % rev)
             if ctx.hidden():
                 continue
             if ctx.substate:
@@ -608,75 +608,75 @@ def hg2git(repourl,m,marksfile,mappingfile,headsfile,tipfile,
 
     c=0
     brmap={}
-    for rev in range(min,max):
-        c=export_commit(ui,repo,rev,old_marks,max,c,authors,branchesmap,
-                        sob,brmap,hgtags,encoding,fn_encoding,
+    for rev in range(min, max):
+        c=export_commit(ui, repo, rev, old_marks, max, c, authors, branchesmap,
+                        sob, brmap, hgtags, encoding, fn_encoding,
                         plugins)
     if notes:
-        for rev in range(min,max):
-            c=export_note(ui,repo,rev,c,authors, encoding, rev == min and min != 0)
+        for rev in range(min, max):
+            c=export_note(ui, repo, rev, c, authors, encoding, rev == min and min != 0)
 
     state_cache[b'tip']=max
     state_cache[b'repo']=repourl
-    save_cache(tipfile,state_cache)
-    save_cache(mappingfile,mapping_cache)
+    save_cache(tipfile, state_cache)
+    save_cache(mappingfile, mapping_cache)
 
-    c=export_tags(ui,repo,old_marks,mapping_cache,c,authors,tagsmap)
+    c=export_tags(ui, repo, old_marks, mapping_cache, c, authors, tagsmap)
 
     sys.stderr.write('Issued %d commands\n' % c)
 
     return 0
 
 if __name__=='__main__':
-    def bail(parser,opt):
+    def bail(parser, opt):
         sys.stderr.write('Error: No %s option given\n' % opt)
         parser.print_help()
         sys.exit(2)
 
     parser=OptionParser()
 
-    parser.add_option("-n", "--no-auto-sanitize",action="store_false",
-        dest="auto_sanitize",default=True,
+    parser.add_option("-n", "--no-auto-sanitize", action="store_false",
+        dest="auto_sanitize", default=True,
         help="Do not perform built-in (broken in many cases) sanitizing of names")
-    parser.add_option("-m","--max",type="int",dest="max",
+    parser.add_option("-m", "--max", type="int", dest="max",
         help="Maximum hg revision to import")
-    parser.add_option("--mapping",dest="mappingfile",
+    parser.add_option("--mapping", dest="mappingfile",
         help="File to read last run's hg-to-git SHA1 mapping")
-    parser.add_option("--marks",dest="marksfile",
+    parser.add_option("--marks", dest="marksfile",
         help="File to read git-fast-import's marks from")
-    parser.add_option("--heads",dest="headsfile",
+    parser.add_option("--heads", dest="headsfile",
         help="File to read last run's git heads from")
-    parser.add_option("--status",dest="statusfile",
+    parser.add_option("--status", dest="statusfile",
         help="File to read status from")
-    parser.add_option("-r","--repo",dest="repourl",
+    parser.add_option("-r", "--repo", dest="repourl",
         help="URL of repo to import")
-    parser.add_option("-s",action="store_true",dest="sob",
-        default=False,help="Enable parsing Signed-off-by lines")
-    parser.add_option("--hgtags",action="store_true",dest="hgtags",
-        default=False,help="Enable exporting .hgtags files")
-    parser.add_option("-A","--authors",dest="authorfile",
+    parser.add_option("-s", action="store_true", dest="sob",
+        default=False, help="Enable parsing Signed-off-by lines")
+    parser.add_option("--hgtags", action="store_true", dest="hgtags",
+        default=False, help="Enable exporting .hgtags files")
+    parser.add_option("-A", "--authors", dest="authorfile",
         help="Read authormap from AUTHORFILE")
-    parser.add_option("-B","--branches",dest="branchesfile",
+    parser.add_option("-B", "--branches", dest="branchesfile",
         help="Read branch map from BRANCHESFILE")
-    parser.add_option("-T","--tags",dest="tagsfile",
+    parser.add_option("-T", "--tags", dest="tagsfile",
         help="Read tags map from TAGSFILE")
-    parser.add_option("-f","--force",action="store_true",dest="force",
-        default=False,help="Ignore validation errors by force, implies --ignore-unnamed-heads")
-    parser.add_option("--ignore-unnamed-heads",action="store_true",dest="ignore_unnamed_heads",
-        default=False,help="Ignore unnamed head errors")
-    parser.add_option("-M","--default-branch",dest="default_branch",
+    parser.add_option("-f", "--force", action="store_true", dest="force",
+        default=False, help="Ignore validation errors by force, implies --ignore-unnamed-heads")
+    parser.add_option("--ignore-unnamed-heads", action="store_true", dest="ignore_unnamed_heads",
+        default=False, help="Ignore unnamed head errors")
+    parser.add_option("-M", "--default-branch", dest="default_branch",
         help="Set the default branch")
-    parser.add_option("-o","--origin",dest="origin_name",
+    parser.add_option("-o", "--origin", dest="origin_name",
         help="use <name> as namespace to track upstream")
-    parser.add_option("--hg-hash",action="store_true",dest="notes",
-        default=False,help="Annotate commits with the hg hash as git notes in the hg namespace")
-    parser.add_option("-e",dest="encoding",
+    parser.add_option("--hg-hash", action="store_true", dest="notes",
+        default=False, help="Annotate commits with the hg hash as git notes in the hg namespace")
+    parser.add_option("-e", dest="encoding",
         help="Assume commit and author strings retrieved from Mercurial are encoded in <encoding>")
-    parser.add_option("--fe",dest="fn_encoding",
+    parser.add_option("--fe", dest="fn_encoding",
         help="Assume file names from Mercurial are encoded in <filename_encoding>")
-    parser.add_option("--mappings-are-raw",dest="raw_mappings", default=False,
+    parser.add_option("--mappings-are-raw", dest="raw_mappings", default=False,
         help="Assume mappings are raw <key>=<value> lines")
-    parser.add_option("--filter-contents",dest="filter_contents",
+    parser.add_option("--filter-contents", dest="filter_contents",
         help="Pipe contents of each exported file through FILTER_CONTENTS <file-path> <hg-hash> <is-binary>")
     parser.add_option("--plugin-path", type="string", dest="pluginpath",
         help="Additional search path for plugins ")
@@ -685,17 +685,17 @@ if __name__=='__main__':
     parser.add_option("--subrepo-map", type="string", dest="subrepo_map",
         help="Provide a mapping file between the subrepository name and the submodule name")
 
-    (options,args)=parser.parse_args()
+    (options, args)=parser.parse_args()
 
     m=-1
     auto_sanitize = options.auto_sanitize
     if options.max!=None: m=options.max
 
-    if options.marksfile==None: bail(parser,'--marks')
-    if options.mappingfile==None: bail(parser,'--mapping')
-    if options.headsfile==None: bail(parser,'--heads')
-    if options.statusfile==None: bail(parser,'--status')
-    if options.repourl==None: bail(parser,'--repo')
+    if options.marksfile==None: bail(parser, '--marks')
+    if options.mappingfile==None: bail(parser, '--mapping')
+    if options.headsfile==None: bail(parser, '--heads')
+    if options.statusfile==None: bail(parser, '--status')
+    if options.repourl==None: bail(parser, '--repo')
 
     if options.subrepo_map:
         if not os.path.exists(options.subrepo_map):
@@ -703,7 +703,7 @@ if __name__=='__main__':
                              % options.subrepo_map)
             sys.exit(1)
         submodule_mappings=load_mapping('subrepo mappings',
-                                        options.subrepo_map,False)
+                                        options.subrepo_map, False)
 
     a={}
     if options.authorfile!=None:
@@ -748,19 +748,19 @@ if __name__=='__main__':
     for plugin in plugins:
         split = plugin.split('=')
         name, opts = split[0], '='.join(split[1:])
-        i = pluginloader.get_plugin(name,options.pluginpath)
+        i = pluginloader.get_plugin(name, options.pluginpath)
         sys.stderr.write('Loaded plugin ' + i['name'] + ' from path: ' + i['path'] +' with opts: ' + opts + '\n')
         plugin = pluginloader.load_plugin(i).build_filter(opts)
-        if hasattr(plugin,'file_data_filter') and callable(plugin.file_data_filter):
+        if hasattr(plugin, 'file_data_filter') and callable(plugin.file_data_filter):
             plugins_dict['file_data_filters'].append(plugin.file_data_filter)
         if hasattr(plugin, 'commit_message_filter') and callable(plugin.commit_message_filter):
             plugins_dict['commit_message_filters'].append(plugin.commit_message_filter)
 
-    sys.exit(hg2git(options.repourl,m,options.marksfile,options.mappingfile,
+    sys.exit(hg2git(options.repourl, m, options.marksfile, options.mappingfile,
                     options.headsfile, options.statusfile,
-                    authors=a,branchesmap=b,tagsmap=t,
-                    sob=options.sob,force=options.force,
+                    authors=a, branchesmap=b, tagsmap=t,
+                    sob=options.sob, force=options.force,
                     ignore_unnamed_heads=options.ignore_unnamed_heads,
                     hgtags=options.hgtags,
-                    notes=options.notes,encoding=encoding,fn_encoding=fn_encoding,
+                    notes=options.notes, encoding=encoding, fn_encoding=fn_encoding,
                     plugins=plugins_dict))
