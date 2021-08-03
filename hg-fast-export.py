@@ -266,9 +266,11 @@ def sanitize_name(name,what="branch", mapping={}):
   if not auto_sanitize:
     return mapping.get(name,name)
   n=mapping.get(name,name)
-  p=re.compile(b'([[ ~^:?\\\\*]|\.\.)')
+  p = re.compile(b"([^a-zA-Z0-9-_/]|[\.\.])")
   n=p.sub(b'_', n)
-  if n[-1:] in (b'/', b'.'): n=n[:-1]+b'_'
+  p = re.compile(b"([\/]{2,})")
+  n=p.sub(b'/', n)
+  n = n.strip(b'/').strip(b'.').strip(b'-')
   n=b'/'.join([dot(s) for s in n.split(b'/')])
   p=re.compile(b'_+')
   n=p.sub(b'_', n)
@@ -441,8 +443,8 @@ def load_mapping(name, filename, mapping_is_raw):
   def parse_quoted_line(line):
     m=quoted_regexp.match(line)
     if m==None:
-      return 
-    
+      return
+
     return (process_unicode_escape_sequences(m.group(1)),
             process_unicode_escape_sequences(m.group(5)))
 
