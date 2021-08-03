@@ -715,7 +715,7 @@ if __name__=='__main__':
   if options.filter_contents!=None:
     plugins+=['shell_filter_file_contents='+options.filter_contents]
 
-  plugins_dict={}
+  plugins_dict={}  # type: ignore
   plugins_dict['commit_message_filters']=[]
   plugins_dict['file_data_filters']=[]
 
