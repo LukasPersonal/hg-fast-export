@@ -185,8 +185,8 @@ def refresh_hg_submodule(name, subrepo_info):
     # Populate the cache to map mercurial revision to git revision
     if not name in subrepo_cache:
         subrepo_cache[name] = (load_cache(gitRepoLocation+b"/hg2git-mapping"),
-                             load_cache(gitRepoLocation+b"/hg2git-marks",
-                                        lambda s: int(s)-1))
+                               load_cache(gitRepoLocation+b"/hg2git-marks",
+                                          lambda s: int(s)-1))
 
     (mapping_cache, marks_cache) = subrepo_cache[name]
     subrepo_hash = subrepo_info[1]
@@ -199,7 +199,7 @@ def refresh_hg_submodule(name, subrepo_info):
           % (name, subrepo_hash, gitSha)
         )
         return b'[submodule "%s"]\n\tpath = %s\n\turl = %s\n' % (name, name,
-          submodule_mappings[name])
+                                                                 submodule_mappings[name])
     else:
         stderr_buffer.write(
           b"Warning: Could not find hg revision %s for %s in git %s\n"
@@ -258,7 +258,7 @@ def export_file_contents(ctx, manifest, files, hgtags, encoding='', plugins={}):
             file_ctx = file_data['file_ctx']
 
         wr(b'M %s inline %s' % (gitmode(manifest.flags(file)),
-                               strip_leading_slash(filename)))
+                                strip_leading_slash(filename)))
         wr(b'data %d' % len(d))  # had some trouble with size()
         wr(d)
         count += 1
@@ -610,8 +610,8 @@ def hg2git(repourl, m, marksfile, mappingfile, headsfile, tipfile,
     brmap = {}
     for rev in range(min, max):
         c = export_commit(ui, repo, rev, old_marks, max, c, authors, branchesmap,
-                        sob, brmap, hgtags, encoding, fn_encoding,
-                        plugins)
+                          sob, brmap, hgtags, encoding, fn_encoding,
+                          plugins)
     if notes:
         for rev in range(min, max):
             c = export_note(ui, repo, rev, c, authors, encoding, rev == min and min != 0)
@@ -636,54 +636,54 @@ if __name__ == '__main__':
     parser = OptionParser()
 
     parser.add_option("-n", "--no-auto-sanitize", action="store_false",
-        dest="auto_sanitize", default=True,
-        help="Do not perform built-in (broken in many cases) sanitizing of names")
+                      dest="auto_sanitize", default=True,
+                      help="Do not perform built-in (broken in many cases) sanitizing of names")
     parser.add_option("-m", "--max", type="int", dest="max",
-        help="Maximum hg revision to import")
+                      help="Maximum hg revision to import")
     parser.add_option("--mapping", dest="mappingfile",
-        help="File to read last run's hg-to-git SHA1 mapping")
+                      help="File to read last run's hg-to-git SHA1 mapping")
     parser.add_option("--marks", dest="marksfile",
-        help="File to read git-fast-import's marks from")
+                      help="File to read git-fast-import's marks from")
     parser.add_option("--heads", dest="headsfile",
-        help="File to read last run's git heads from")
+                      help="File to read last run's git heads from")
     parser.add_option("--status", dest="statusfile",
-        help="File to read status from")
+                      help="File to read status from")
     parser.add_option("-r", "--repo", dest="repourl",
-        help="URL of repo to import")
+                      help="URL of repo to import")
     parser.add_option("-s", action="store_true", dest="sob",
-        default=False, help="Enable parsing Signed-off-by lines")
+                      default=False, help="Enable parsing Signed-off-by lines")
     parser.add_option("--hgtags", action="store_true", dest="hgtags",
-        default=False, help="Enable exporting .hgtags files")
+                      default=False, help="Enable exporting .hgtags files")
     parser.add_option("-A", "--authors", dest="authorfile",
-        help="Read authormap from AUTHORFILE")
+                      help="Read authormap from AUTHORFILE")
     parser.add_option("-B", "--branches", dest="branchesfile",
-        help="Read branch map from BRANCHESFILE")
+                      help="Read branch map from BRANCHESFILE")
     parser.add_option("-T", "--tags", dest="tagsfile",
-        help="Read tags map from TAGSFILE")
+                      help="Read tags map from TAGSFILE")
     parser.add_option("-f", "--force", action="store_true", dest="force",
-        default=False, help="Ignore validation errors by force, implies --ignore-unnamed-heads")
+                      default=False, help="Ignore validation errors by force, implies --ignore-unnamed-heads")
     parser.add_option("--ignore-unnamed-heads", action="store_true", dest="ignore_unnamed_heads",
-        default=False, help="Ignore unnamed head errors")
+                      default=False, help="Ignore unnamed head errors")
     parser.add_option("-M", "--default-branch", dest="default_branch",
-        help="Set the default branch")
+                      help="Set the default branch")
     parser.add_option("-o", "--origin", dest="origin_name",
-        help="use <name> as namespace to track upstream")
+                      help="use <name> as namespace to track upstream")
     parser.add_option("--hg-hash", action="store_true", dest="notes",
-        default=False, help="Annotate commits with the hg hash as git notes in the hg namespace")
+                      default=False, help="Annotate commits with the hg hash as git notes in the hg namespace")
     parser.add_option("-e", dest="encoding",
-        help="Assume commit and author strings retrieved from Mercurial are encoded in <encoding>")
+                      help="Assume commit and author strings retrieved from Mercurial are encoded in <encoding>")
     parser.add_option("--fe", dest="fn_encoding",
-        help="Assume file names from Mercurial are encoded in <filename_encoding>")
+                      help="Assume file names from Mercurial are encoded in <filename_encoding>")
     parser.add_option("--mappings-are-raw", dest="raw_mappings", default=False,
-        help="Assume mappings are raw <key>=<value> lines")
+                      help="Assume mappings are raw <key>=<value> lines")
     parser.add_option("--filter-contents", dest="filter_contents",
-        help="Pipe contents of each exported file through FILTER_CONTENTS <file-path> <hg-hash> <is-binary>")
+                      help="Pipe contents of each exported file through FILTER_CONTENTS <file-path> <hg-hash> <is-binary>")
     parser.add_option("--plugin-path", type="string", dest="pluginpath",
-        help="Additional search path for plugins ")
+                      help="Additional search path for plugins ")
     parser.add_option("--plugin", action="append", type="string", dest="plugins",
-        help="Add a plugin with the given init string <name=init>")
+                      help="Add a plugin with the given init string <name=init>")
     parser.add_option("--subrepo-map", type="string", dest="subrepo_map",
-        help="Provide a mapping file between the subrepository name and the submodule name")
+                      help="Provide a mapping file between the subrepository name and the submodule name")
 
     (options, args) = parser.parse_args()
 
@@ -703,7 +703,7 @@ if __name__ == '__main__':
                              % options.subrepo_map)
             sys.exit(1)
         submodule_mappings = load_mapping('subrepo mappings',
-                                        options.subrepo_map, False)
+                                          options.subrepo_map, False)
 
     a = {}
     if options.authorfile != None:
