@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-
+# pylint: disable=E0602
 # Copyright (c) 2007, 2008 Rocco Rutte <pdmef@gmx.net> and others.
 # License: MIT <http://www.opensource.org/licenses/mit-license.php>
 
