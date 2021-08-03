@@ -1,22 +1,22 @@
 #!/bin/sh
-
+# shellcheck disable=SC2097,SC2098
 # Copyright (c) 2007, 2008 Rocco Rutte <pdmef@gmx.net> and others.
 # License: MIT <http://www.opensource.org/licenses/mit-license.php>
 
-ROOT="`dirname $0`"
+ROOT="$(dirname "$0")"
 REPO=""
 PFX="hg2git"
 SFX_MARKS="marks"
 SFX_MAPPING="mapping"
 SFX_HEADS="heads"
 SFX_STATE="state"
-QUIET=""
 
 if [ -z "${PYTHON}" ]; then
     # $PYTHON is not set, so we try to find a working python with mercurial:
     for python_cmd in python2 python python3; do
         if command -v $python_cmd > /dev/null; then
             $python_cmd -c 'import mercurial' 2> /dev/null
+            # shellcheck disable=SC2181
             if [ $? -eq 0 ]; then
                 PYTHON=$python_cmd
                 break
@@ -30,16 +30,16 @@ if [ -z "${PYTHON}" ]; then
     exit 1
 fi
 
-USAGE="[-r <repo>] -R <rev>"
-LONG_USAGE="Print SHA1s of latest changes per branch up to <rev> useful
-to reset import and restart at <rev>.
-If <repo> is omitted, use last hg repository as obtained from state file,
-GIT_DIR/$PFX-$SFX_STATE by default.
-
-Options:
-	-R	Hg revision to reset to
-	-r	Mercurial repository to use
-"
+# USAGE="[-r <repo>] -R <rev>"
+# LONG_USAGE="Print SHA1s of latest changes per branch up to <rev> useful
+# to reset import and restart at <rev>.
+# If <repo> is omitted, use last hg repository as obtained from state file,
+# GIT_DIR/$PFX-$SFX_STATE by default.
+#
+# Options:
+# -R	Hg revision to reset to
+# -r	Mercurial repository to use
+# "
 
 IS_BARE=$(git rev-parse --is-bare-repository) \
     || (echo "Could not find git repo" ; exit 1)
@@ -47,7 +47,7 @@ if test "z$IS_BARE" != ztrue; then
    # This is not a bare repo, cd to the toplevel
    TOPLEVEL=$(git rev-parse --show-toplevel) \
        || (echo "Could not find git repo toplevel" ; exit 1)
-   cd $TOPLEVEL || exit 1
+   cd "$TOPLEVEL" || exit 1
 fi
 GIT_DIR=$(git rev-parse --git-dir) || (echo "Could not find git repo" ; exit 1)
 
@@ -70,8 +70,8 @@ do
 done
 
 # for convenience: get default repo from state file
-if [ x"$REPO" = x -a -f "$GIT_DIR/$PFX-$SFX_STATE" ] ; then
-  REPO="`grep '^:repo ' "$GIT_DIR/$PFX-$SFX_STATE" | cut -d ' ' -f 2`"
+if [ "$REPO" ] &&  [ -f "$GIT_DIR/$PFX-$SFX_STATE" ] ; then
+  REPO="$(grep '^:repo ' "$GIT_DIR/$PFX-$SFX_STATE" | cut -d ' ' -f 2)"
   echo "Using last hg repository \"$REPO\""
 fi
 
