@@ -51,7 +51,9 @@ RUN apt-get update \
 #######################
 RUN add-apt-repository ppa:git-core/ppa -y \
     && apt-get update \
-    && apt-get install git -y
+    && apt-get install -y --no-install-recommends \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
 ################
 # Pip Installs #
