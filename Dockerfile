@@ -46,13 +46,6 @@ RUN apt-get update \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-#######################
-# Upgrade git version #
-#######################
-RUN add-apt-repository ppa:git-core/ppa -y \
-    && apt-get update \
-    && apt-get install git -y
-
 ################
 # Pip Installs #
 ################
