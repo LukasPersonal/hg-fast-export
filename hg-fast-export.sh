@@ -32,6 +32,7 @@ if [ -z "${PYTHON}" ]; then
     for python_cmd in python2 python python3; do
         if command -v $python_cmd > /dev/null; then
             $python_cmd -c 'from mercurial.scmutil import revsymbol' 2> /dev/null
+            # shellcheck disable=SC2181
             if [ $? -eq 0 ]; then
                 PYTHON=$python_cmd
                 break
@@ -100,7 +101,7 @@ GIT_DIR=$(git rev-parse --git-dir) || (echo "Could not find git repo" ; exit 1)
 
 
 IGNORECASEWARN=""
-IGNORECASE=`git config core.ignoreCase`
+IGNORECASE=$(git config core.ignoreCase)
 if [ "true" = "$IGNORECASE" ]; then
     IGNORECASEWARN="true"
 fi;
@@ -133,7 +134,7 @@ do
   shift
 done
 
-if [ ! -z "$IGNORECASEWARN" ]; then
+if [ -n "$IGNORECASEWARN" ]; then
     echo "Error: The option core.ignoreCase is set to true in the git"
     echo "repository. This will produce empty changesets for renames that just"
     echo "change the case of the file name."
@@ -151,7 +152,7 @@ done
 
 # for convenience: get default repo from state file
 if [ x"$REPO" = x -a -f "$GIT_DIR/$PFX-$SFX_STATE" ] ; then
-  REPO="`grep '^:repo ' "$GIT_DIR/$PFX-$SFX_STATE" | cut -d ' ' -f 2`"
+  REPO="$(grep '^:repo ' "$GIT_DIR/$PFX-$SFX_STATE" | cut -d ' ' -f 2)"
   echo "Using last hg repository \"$REPO\""
 fi
 
@@ -208,8 +209,8 @@ cat "$GIT_DIR/$PFX-$SFX_MARKS.old" "$GIT_DIR/$PFX-$SFX_MARKS.tmp" \
 
 # save SHA1s of current heads for incremental imports
 # and connectivity (plus sanity checking)
-for head in `git branch | sed 's#^..##'` ; do
-  id="`git rev-parse refs/heads/$head`"
+for head in $(git branch | sed 's#^..##') ; do
+  id="$(git rev-parse refs/heads/$head)"
   echo ":$head $id"
 done > "$GIT_DIR/$PFX-$SFX_HEADS"
 
