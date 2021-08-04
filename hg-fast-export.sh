@@ -151,7 +151,7 @@ for i in $SFX_STATE $SFX_MARKS $SFX_MAPPING $SFX_HEADS ; do
 done
 
 # for convenience: get default repo from state file
-if [ "$REPO" = -a -f "$GIT_DIR/$PFX-$SFX_STATE" ] ; then
+if [ "$REPO" = -f "$GIT_DIR/$PFX-$SFX_STATE" ] ; then
   REPO="$(grep '^:repo ' "$GIT_DIR/$PFX-$SFX_STATE" | cut -d ' ' -f 2)"
   echo "Using last hg repository \"$REPO\""
 fi
