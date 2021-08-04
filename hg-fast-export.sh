@@ -1,5 +1,5 @@
 #!/bin/sh
-# shellcheck disable=SC2097,SC2098
+
 # Copyright (c) 2007, 2008 Rocco Rutte <pdmef@gmx.net> and others.
 # License: MIT <http://www.opensource.org/licenses/mit-license.php>
 
@@ -32,7 +32,6 @@ if [ -z "${PYTHON}" ]; then
     for python_cmd in python2 python python3; do
         if command -v $python_cmd > /dev/null; then
             $python_cmd -c 'from mercurial.scmutil import revsymbol' 2> /dev/null
-            # shellcheck disable=SC2181
             if [ $? -eq 0 ]; then
                 PYTHON=$python_cmd
                 break
@@ -101,7 +100,7 @@ GIT_DIR=$(git rev-parse --git-dir) || (echo "Could not find git repo" ; exit 1)
 
 
 IGNORECASEWARN=""
-IGNORECASE=$(git config core.ignoreCase)
+IGNORECASE=`git config core.ignoreCase`
 if [ "true" = "$IGNORECASE" ]; then
     IGNORECASEWARN="true"
 fi;
@@ -134,7 +133,7 @@ do
   shift
 done
 
-if [ -n "$IGNORECASEWARN" ]; then
+if [ ! -z "$IGNORECASEWARN" ]; then
     echo "Error: The option core.ignoreCase is set to true in the git"
     echo "repository. This will produce empty changesets for renames that just"
     echo "change the case of the file name."
@@ -151,8 +150,8 @@ for i in $SFX_STATE $SFX_MARKS $SFX_MAPPING $SFX_HEADS ; do
 done
 
 # for convenience: get default repo from state file
-if [ "$REPO" ] && [ -f "$GIT_DIR/$PFX-$SFX_STATE" ] ; then
-  REPO="$(grep '^:repo ' "$GIT_DIR/$PFX-$SFX_STATE" | cut -d ' ' -f 2)"
+if [ x"$REPO" = x -a -f "$GIT_DIR/$PFX-$SFX_STATE" ] ; then
+  REPO="`grep '^:repo ' "$GIT_DIR/$PFX-$SFX_STATE" | cut -d ' ' -f 2`"
   echo "Using last hg repository \"$REPO\""
 fi
 
@@ -188,13 +187,13 @@ $(
   } | \
   {
     _e2=0
-    git fast-import "$GFI_OPTS" --export-marks="$GIT_DIR/$PFX-$SFX_MARKS.tmp" 3>&- || _e2=$?
+    git fast-import $GFI_OPTS --export-marks="$GIT_DIR/$PFX-$SFX_MARKS.tmp" 3>&- || _e2=$?
     echo $_e2 >&3
   }
 )
 EOT
 exec 3>&-
-[ "$_err1" = 0 ] && [ "$_err2" = 0 ] || exit 1
+[ "$_err1" = 0 -a "$_err2" = 0 ] || exit 1
 
 # move recent marks cache out of the way...
 if [ -f "$GIT_DIR/$PFX-$SFX_MARKS" ] ; then
@@ -209,8 +208,8 @@ cat "$GIT_DIR/$PFX-$SFX_MARKS.old" "$GIT_DIR/$PFX-$SFX_MARKS.tmp" \
 
 # save SHA1s of current heads for incremental imports
 # and connectivity (plus sanity checking)
-for head in $(git branch | sed 's#^..##') ; do
-  id="$(git rev-parse "refs/heads/$head")"
+for head in `git branch | sed 's#^..##'` ; do
+  id="`git rev-parse refs/heads/$head`"
   echo ":$head $id"
 done > "$GIT_DIR/$PFX-$SFX_HEADS"
 
