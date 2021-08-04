@@ -1,5 +1,5 @@
 #!/bin/sh
-# shellcheck disable=SC2097,SC2098
+
 # Copyright (c) 2007, 2008 Rocco Rutte <pdmef@gmx.net> and others.
 # License: MIT <http://www.opensource.org/licenses/mit-license.php>
 
@@ -151,7 +151,7 @@ for i in $SFX_STATE $SFX_MARKS $SFX_MAPPING $SFX_HEADS ; do
 done
 
 # for convenience: get default repo from state file
-if [ "$REPO" ] && [ -f "$GIT_DIR/$PFX-$SFX_STATE" ] ; then
+if [ "$REPO" = -f "$GIT_DIR/$PFX-$SFX_STATE" ] ; then
   REPO="$(grep '^:repo ' "$GIT_DIR/$PFX-$SFX_STATE" | cut -d ' ' -f 2)"
   echo "Using last hg repository \"$REPO\""
 fi
@@ -188,13 +188,14 @@ $(
   } | \
   {
     _e2=0
-    git fast-import "$GFI_OPTS" --export-marks="$GIT_DIR/$PFX-$SFX_MARKS.tmp" 3>&- || _e2=$?
+    # shellcheck disable=SC2086
+    git fast-import $GFI_OPTS --export-marks="$GIT_DIR/$PFX-$SFX_MARKS.tmp" 3>&- || _e2=$?
     echo $_e2 >&3
   }
 )
 EOT
 exec 3>&-
-[ "$_err1" = 0 ] && [ "$_err2" = 0 ] || exit 1
+[ "$_err1" = 0 -a "$_err2" = 0 ] || exit 1
 
 # move recent marks cache out of the way...
 if [ -f "$GIT_DIR/$PFX-$SFX_MARKS" ] ; then
