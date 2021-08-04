@@ -151,7 +151,7 @@ for i in $SFX_STATE $SFX_MARKS $SFX_MAPPING $SFX_HEADS ; do
 done
 
 # for convenience: get default repo from state file
-if [ x"$REPO" = x -a -f "$GIT_DIR/$PFX-$SFX_STATE" ] ; then
+if [ "$REPO" = -a -f "$GIT_DIR/$PFX-$SFX_STATE" ] ; then
   REPO="$(grep '^:repo ' "$GIT_DIR/$PFX-$SFX_STATE" | cut -d ' ' -f 2)"
   echo "Using last hg repository \"$REPO\""
 fi
@@ -188,6 +188,7 @@ $(
   } | \
   {
     _e2=0
+    # shellcheck disable=SC2086
     git fast-import $GFI_OPTS --export-marks="$GIT_DIR/$PFX-$SFX_MARKS.tmp" 3>&- || _e2=$?
     echo $_e2 >&3
   }
@@ -210,7 +211,7 @@ cat "$GIT_DIR/$PFX-$SFX_MARKS.old" "$GIT_DIR/$PFX-$SFX_MARKS.tmp" \
 # save SHA1s of current heads for incremental imports
 # and connectivity (plus sanity checking)
 for head in $(git branch | sed 's#^..##') ; do
-  id="$(git rev-parse refs/heads/$head)"
+  id="$(git rev-parse "refs/heads/$head")"
   echo ":$head $id"
 done > "$GIT_DIR/$PFX-$SFX_HEADS"
 
