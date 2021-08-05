@@ -33,6 +33,7 @@ LABEL maintainer="GitHub DevOps <github_devops@github.com>" \
 # hadolint ignore=DL3008
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
+  apt-utils \
   bash \
   build-essential \
   curl \
