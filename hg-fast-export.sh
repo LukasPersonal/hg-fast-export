@@ -58,7 +58,7 @@ USAGE="[--quiet] [-r <repo>] [--force] [--ignore-unnamed-heads]" \
       " [-M <name>] [-o <name>] [--hg-hash] [-e <encoding>]"
 LONG_USAGE="Import hg repository <repo> up to either tip or <max>
 If <repo> is omitted, use last hg repository as obtained from state file,
-GIT_DIR/$PFX-$SFX_STATE by default.
+GIT_DIR/${PFX}-${SFX_STATE} by default.
 
 Note: The argument order matters.
 
@@ -92,9 +92,9 @@ Options:
 "
 case "$1" in
   -h|--help)
-    echo "usage: $(basename "$0") $USAGE"
+    echo "usage: $(basename "$0") ${USAGE}"
     echo ""
-    echo "$LONG_USAGE"
+    echo "${LONG_USAGE}"
     exit 0
 esac
 
@@ -104,14 +104,14 @@ if test "z$IS_BARE" != ztrue; then
   # This is not a bare repo, cd to the toplevel
   TOPLEVEL=$(git rev-parse --show-toplevel) \
     || (echo "Could not find git repo toplevel" ; exit 1)
-  cd "$TOPLEVEL" || exit 1
+  cd "${TOPLEVEL}" || exit 1
 fi
 
 GIT_DIR=$(git rev-parse --git-dir) || (echo "Could not find git repo" ; exit 1)
 
 IGNORECASEWARN=""
 IGNORECASE=$(git config core.ignoreCase)
-if [ "true" = "$IGNORECASE" ]; then
+if [ "true" = "${IGNORECASE}" ]; then
   IGNORECASEWARN="true"
 fi
 
@@ -124,11 +124,11 @@ do
       REPO="$1"
       ;;
     --q|--qu|--qui|--quie|--quiet)
-      GFI_OPTS="$GFI_OPTS --quiet"
+      GFI_OPTS="${GFI_OPTS} --quiet"
       ;;
     --force)
       # pass --force to git-fast-import and hg-fast-export.py
-      GFI_OPTS="$GFI_OPTS --force"
+      GFI_OPTS="${GFI_OPTS} --force"
       IGNORECASEWARN="";
       break
       ;;
@@ -143,7 +143,7 @@ do
   shift
 done
 
-if [ -n "$IGNORECASEWARN" ]; then
+if [ -n "${IGNORECASEWARN}" ]; then
   echo "Error: The option core.ignoreCase is set to true in the git"
   echo "repository. This will produce empty changesets for renames that just"
   echo "change the case of the file name."
@@ -153,30 +153,31 @@ if [ -n "$IGNORECASEWARN" ]; then
 fi;
 
 # Make a backup copy of each state file
-for i in $SFX_STATE $SFX_MARKS $SFX_MAPPING $SFX_HEADS ; do
-  if [ -f "$GIT_DIR/$PFX-$i" ] ; then
-    cp "$GIT_DIR/$PFX-$i" "$GIT_DIR/$PFX-$i~"
+for FILE in ${SFX_STATE} ${SFX_MARKS} ${SFX_MAPPING} ${SFX_HEADS} ; do
+  if [ -f "${GIT_DIR}/${PFX}-${FILE}" ] ; then
+    cp "${GIT_DIR}/${PFX}-${FILE}" "${GIT_DIR}/${PFX}-${FILE}~"
   fi
 done
 
 # for convenience: get default repo from state file
-if [ "${REPO}" ] && [ -f "$GIT_DIR/$PFX-$SFX_STATE" ] ; then
-  REPO="$(grep '^:repo ' "$GIT_DIR/$PFX-$SFX_STATE" | cut -d ' ' -f 2)"
+if [ "${REPO}" ] && [ -f "${GIT_DIR}/${PFX}-${SFX_STATE}" ] ; then
+  REPO="$(grep '^:repo ' "${GIT_DIR}/${PFX}-${SFX_STATE}" | cut -d ' ' -f 2)"
   echo "Using last hg repository \"${REPO}\""
 fi
 
+# Look to see if we have a repo
 if [  -z "${REPO}" ]; then
   echo "no repo given, use -r flag"
   exit 1
 fi
 
 # make sure we have a marks cache
-if [ ! -f "$GIT_DIR/$PFX-$SFX_MARKS" ] ; then
-  touch "$GIT_DIR/$PFX-$SFX_MARKS"
+if [ ! -f "${GIT_DIR}/${PFX}-${SFX_MARKS}" ] ; then
+  touch "${GIT_DIR}/${PFX}-${SFX_MARKS}"
 fi
 
 # cleanup on exit
-trap 'rm -f "$GIT_DIR/$PFX-$SFX_MARKS.old" "$GIT_DIR/$PFX-$SFX_MARKS.tmp"' 0
+trap 'rm -f "${GIT_DIR}/${PFX}-${SFX_MARKS}.old" "${GIT_DIR}/${PFX}-${SFX_MARKS}.tmp"' 0
 
 _err1=
 _err2=
@@ -186,19 +187,19 @@ $(
   exec 4>&3 3>&1 1>&4 4>&-
   {
     _e1=0
-    GIT_DIR="$GIT_DIR" "$PYTHON" "${ROOT}/hg-fast-export.py" \
+    GIT_DIR="${GIT_DIR}" "${PYTHON}" "${ROOT}/hg-fast-export.py" \
       --repo "${REPO}" \
-      --marks "$GIT_DIR/$PFX-$SFX_MARKS" \
-      --mapping "$GIT_DIR/$PFX-$SFX_MAPPING" \
-      --heads "$GIT_DIR/$PFX-$SFX_HEADS" \
-      --status "$GIT_DIR/$PFX-$SFX_STATE" \
+      --marks "${GIT_DIR}/${PFX}-${SFX_MARKS}" \
+      --mapping "${GIT_DIR}/${PFX}-${SFX_MAPPING}" \
+      --heads "${GIT_DIR}/${PFX}-${SFX_HEADS}" \
+      --status "${GIT_DIR}/${PFX}-${SFX_STATE}" \
       "$@" 3>&- || _e1=$?
     echo $_e1 >&3
   } | \
   {
     _e2=0
     # shellcheck disable=SC2086
-    git fast-import $GFI_OPTS --export-marks="$GIT_DIR/$PFX-$SFX_MARKS.tmp" 3>&- || _e2=$?
+    git fast-import ${GFI_OPTS} --export-marks="${GIT_DIR}/${PFX}-${SFX_MARKS}.tmp" 3>&- || _e2=$?
     echo $_e2 >&3
   }
 )
@@ -207,22 +208,19 @@ exec 3>&-
 [ "$_err1" = 0 -a "$_err2" = 0 ] || exit 1
 
 # move recent marks cache out of the way...
-if [ -f "$GIT_DIR/$PFX-$SFX_MARKS" ] ; then
-  mv "$GIT_DIR/$PFX-$SFX_MARKS" "$GIT_DIR/$PFX-$SFX_MARKS.old"
+if [ -f "${GIT_DIR}/${PFX}-${SFX_MARKS}" ] ; then
+  mv "${GIT_DIR}/${PFX}-${SFX_MARKS}" "${GIT_DIR}/${PFX}-${SFX_MARKS}.old"
 else
-  touch "$GIT_DIR/$PFX-$SFX_MARKS.old"
+  touch "${GIT_DIR}/${PFX}-${SFX_MARKS}.old"
 fi
 
 # ...to create a new merged one
-cat "$GIT_DIR/$PFX-$SFX_MARKS.old" "$GIT_DIR/$PFX-$SFX_MARKS.tmp" \
-| uniq > "$GIT_DIR/$PFX-$SFX_MARKS"
+cat "${GIT_DIR}/${PFX}-${SFX_MARKS}.old" "${GIT_DIR}/${PFX}-${SFX_MARKS}.tmp" \
+| uniq > "${GIT_DIR}/${PFX}-${SFX_MARKS}"
 
 # save SHA1s of current heads for incremental imports
 # and connectivity (plus sanity checking)
-for head in $(git branch | sed 's#^..##') ; do
-  id="$(git rev-parse "refs/heads/$head")"
-  echo ":$head $id"
-done > "$GIT_DIR/$PFX-$SFX_HEADS"
-
-# check diff with color:
-# ( for i in `find . -type f | grep -v '\.git'` ; do diff -u $i ${REPO}/$i ; done | cdiff ) | less -r
+for HEAD in $(git branch | sed 's#^..##') ; do
+  ID="$(git rev-parse "refs/heads/${HEAD}")"
+  echo ":${HEAD} ${ID}"
+done > "${GIT_DIR}/${PFX}-${SFX_HEADS}"
