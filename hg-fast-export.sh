@@ -3,22 +3,26 @@
 # Copyright (c) 2007, 2008 Rocco Rutte <pdmef@gmx.net> and others.
 # License: MIT <http://www.opensource.org/licenses/mit-license.php>
 
+# Validate we have readlink or greadlink
 READLINK="readlink"
 if command -v greadlink > /dev/null; then
   READLINK="greadlink" # Prefer greadlink over readlink
 fi
 
-if ! $READLINK -f "$(which "$0")" > /dev/null 2>&1 ; then
+# Validate we have readlink or greadlink
+if ! ${READLINK} -f "$(which "$0")" > /dev/null 2>&1 ; then
   ROOT="$(dirname "$(which "$0")")"
-  if [ ! -f "$ROOT/hg-fast-export.py" ] ; then
+  if [ ! -f "${ROOT}/hg-fast-export.py" ] ; then
     echo "hg-fast-exports requires a readlink implementation which knows" \
       " how to canonicalize paths in order to be called via a symlink."
     exit 1
   fi
 else
-  ROOT="$(dirname "$($READLINK -f "$(which "$0")")")"
+  # Set the root dir
+  ROOT="$(dirname "$(${READLINK} -f "$(which "$0")")")"
 fi
 
+# Vars
 REPO=""
 PFX="hg2git"
 SFX_MAPPING="mapping"
@@ -27,27 +31,31 @@ SFX_HEADS="heads"
 SFX_STATE="state"
 GFI_OPTS=""
 
+# Check we have python installed
 if [ -z "${PYTHON}" ]; then
   # $PYTHON is not set, so we try to find a working python with mercurial:
-  for python_cmd in python2 python python3; do
-    if command -v $python_cmd > /dev/null; then
-      $python_cmd -c 'from mercurial.scmutil import revsymbol' 2> /dev/null
+  for PYTHON_CMD in python2 python python3; do
+    if command -v ${PYTHON_CMD} > /dev/null; then
+      ${PYTHON_CMD} -c 'from mercurial.scmutil import revsymbol' 2> /dev/null
       # shellcheck disable=SC2181
       if [ $? -eq 0 ]; then
-        PYTHON=$python_cmd
+        PYTHON=${PYTHON_CMD}
         break
       fi
     fi
   done
 fi
 
+# Check we have python installed
 if [ -z "${PYTHON}" ]; then
   echo "Could not find a python interpreter with the mercurial module >= 4.6 available. " \
     "Please use the 'PYTHON' environment variable to specify the interpreter to use."
   exit 1
 fi
 
-USAGE="[--quiet] [-r <repo>] [--force] [--ignore-unnamed-heads] [-m <max>] [-s] [--hgtags] [-A <file>] [-B <file>] [-T <file>] [-M <name>] [-o <name>] [--hg-hash] [-e <encoding>]"
+USAGE="[--quiet] [-r <repo>] [--force] [--ignore-unnamed-heads]" \
+      "[-m <max>] [-s] [--hgtags] [-A <file>] [-B <file>] [-T <file>]" \
+      " [-M <name>] [-o <name>] [--hg-hash] [-e <encoding>]"
 LONG_USAGE="Import hg repository <repo> up to either tip or <max>
 If <repo> is omitted, use last hg repository as obtained from state file,
 GIT_DIR/$PFX-$SFX_STATE by default.
@@ -152,12 +160,12 @@ for i in $SFX_STATE $SFX_MARKS $SFX_MAPPING $SFX_HEADS ; do
 done
 
 # for convenience: get default repo from state file
-if [ "$REPO" = -f "$GIT_DIR/$PFX-$SFX_STATE" ] ; then
+if [ "${REPO}" ] && [ -f "$GIT_DIR/$PFX-$SFX_STATE" ] ; then
   REPO="$(grep '^:repo ' "$GIT_DIR/$PFX-$SFX_STATE" | cut -d ' ' -f 2)"
-  echo "Using last hg repository \"$REPO\""
+  echo "Using last hg repository \"${REPO}\""
 fi
 
-if [  -z "$REPO" ]; then
+if [  -z "${REPO}" ]; then
   echo "no repo given, use -r flag"
   exit 1
 fi
@@ -178,8 +186,8 @@ $(
   exec 4>&3 3>&1 1>&4 4>&-
   {
     _e1=0
-    GIT_DIR="$GIT_DIR" "$PYTHON" "$ROOT/hg-fast-export.py" \
-      --repo "$REPO" \
+    GIT_DIR="$GIT_DIR" "$PYTHON" "${ROOT}/hg-fast-export.py" \
+      --repo "${REPO}" \
       --marks "$GIT_DIR/$PFX-$SFX_MARKS" \
       --mapping "$GIT_DIR/$PFX-$SFX_MAPPING" \
       --heads "$GIT_DIR/$PFX-$SFX_HEADS" \
@@ -217,4 +225,4 @@ for head in $(git branch | sed 's#^..##') ; do
 done > "$GIT_DIR/$PFX-$SFX_HEADS"
 
 # check diff with color:
-# ( for i in `find . -type f | grep -v '\.git'` ; do diff -u $i $REPO/$i ; done | cdiff ) | less -r
+# ( for i in `find . -type f | grep -v '\.git'` ; do diff -u $i ${REPO}/$i ; done | cdiff ) | less -r
