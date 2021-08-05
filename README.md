@@ -1,20 +1,19 @@
-hg-fast-export.sh - mercurial to git converter using git-fast-import
-=========================================================================
+# Mercurial to git converter using git-fast-import
 
-Legal
------
+---
+
+## Legal
 
 Most hg-* scripts are licensed under the [MIT license] and were written
 by Rocco Rutte <pdmef@gmx.net> with hints and help from the git list and
 \#mercurial on freenode. hg-reset.py is licensed under GPLv2 since it
 copies some code from the mercurial sources.
 
-The current maintainer is Frej Drejhammar <frej.drejhammar@gmail.com>.
-
 [MIT license]: http://www.opensource.org/licenses/mit-license.php
 
-Support
--------
+---
+
+## Support
 
 If you have problems with hg-fast-export or have found a bug, please
 create an issue at the [github issue tracker]. Before creating a new
@@ -24,10 +23,11 @@ you want to report a security bug. That way the next person having the
 same problem can benefit from the time spent solving the problem the
 first time.
 
-[github issue tracker]: https://github.com/frej/fast-export/issues
+[github issue tracker]: https://github.com/lukasPersonal/hg-fast-export/issues
 
-System Requirements
--------------------
+---
+
+## System Requirements
 
 This project depends on Python 2.7 or 3.5+, and the Mercurial >= 4.6
 package (>= 5.2, if Python 3.5+). If Python is not installed, install
@@ -37,8 +37,21 @@ install mercurial`.
 On windows the bash that comes with "Git for Windows" is known to work
 well.
 
-Usage
------
+The `Dockerfile` can be built to host the migration tool and the environment needed to run it.
+
+### Dockerfile
+
+- Clone the repository to your local machine
+- Build the container image
+  - `docker build -t hg/fast-export:latest -f Dockerfile .`
+- Start the container and map to your local mercurial repo
+  - `docker run -dit --entrypoint /bin/bash -v /path/to/mercurial/repo:/tmp/hg-repo hg/fast-export:latest`
+- You can now run the command(s) from the detached container
+  - Example: `/fast-export/hg-fast-export.sh -r /tmp/hg-repo/trunk --force`
+
+---
+
+## Usage
 
 Using hg-fast-export is quite simple for a mercurial repository <repo>:
 
@@ -97,8 +110,9 @@ The example authors.map below will translate `User
 If you have many Mercurial repositories, Chris J Billington's
 [hg-export-tool] allows you to batch convert them.
 
-Tag and Branch Naming
----------------------
+---
+
+## Tag and Branch Naming
 
 As Git and Mercurial have differ in what is a valid branch and tag
 name the -B and -T options allow a mapping file to be specified to
@@ -116,8 +130,9 @@ branch on git. If your mercurial repo contains both `default` and
 `master` branches, you'll need to override this behavior. Use
 `-M <newName>` to specify what name to give the `default` branch.
 
-Content filtering
------------------
+---
+
+## Content filtering
 
 hg-fast-export supports filtering the content of exported files.
 The filter is supplied to the --filter-contents option. hg-fast-export
@@ -137,9 +152,9 @@ if [ "$3" == "1" ]; then cat; else dos2unix; fi
 -- End of crlf-filter.sh --
 ```
 
+---
 
-Plugins
------------------
+### Plugins
 
 hg-fast-export supports plugins to manipulate the file data and commit
 metadata. The plugins are enabled with the --plugin option. The value
@@ -188,13 +203,16 @@ can be modified by any filter. `file_ctx` is the filecontext from the
 mercurial python library.  After all filters have been run, the values
 are used to add the file to the git commit.
 
-Submodules
-----------
+---
+
+### Submodules
+
 See README-SUBMODULES.md for how to convert subrepositories into git
 submodules.
 
-Notes/Limitations
------------------
+---
+
+### Notes/Limitations
 
 hg-fast-export supports multiple branches but only named branches with
 exactly one head each. Otherwise commits to the tip of these heads
@@ -222,8 +240,9 @@ The way the hg API and remote access protocol is designed it is not
 possible to use hg-fast-export on remote repositories
 (http/ssh). First clone the repository, then convert it.
 
-Design
-------
+---
+
+### Design
 
 hg-fast-export was designed in a way that doesn't require a 2-pass
 mechanism or any prior repository analysis: it just feeds what it
@@ -232,11 +251,12 @@ on strictly linear ordering of changesets from hg, i.e. its
 append-only storage model so that changesets hg-fast-export already
 saw never get modified.
 
-Submitting Patches
-------------------
+---
+
+### Submitting Patches
 
 Please create a pull request at
-[Github](https://github.com/frej/fast-export/pulls) to submit patches.
+[Github](https://github.com/lukasPersonal/fast-export/pulls) to submit patches.
 
 When submitting a patch make sure the commits in your pull request:
 
@@ -262,9 +282,9 @@ hygiene](http://www.ericbmerritt.com/2011/09/21/commit-hygiene-and-git.html)
   how to modify history is in the [Pro Git book, Section
   7.6](https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History).
 
+---
 
-Frequent Problems
-------------------
+## Frequent Problems
 
 * git fast-import crashes with: `error: cannot lock ref 'refs/heads/...`
 
