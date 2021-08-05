@@ -9,14 +9,14 @@ if command -v greadlink > /dev/null; then
 fi
 
 if ! $READLINK -f "$(which "$0")" > /dev/null 2>&1 ; then
-    ROOT="$(dirname "$(which "$0")")"
-    if [ ! -f "$ROOT/hg-fast-export.py" ] ; then
-	echo "hg-fast-exports requires a readlink implementation which knows" \
-	     " how to canonicalize paths in order to be called via a symlink."
-	exit 1
-    fi
+  ROOT="$(dirname "$(which "$0")")"
+  if [ ! -f "$ROOT/hg-fast-export.py" ] ; then
+    echo "hg-fast-exports requires a readlink implementation which knows" \
+      " how to canonicalize paths in order to be called via a symlink."
+    exit 1
+  fi
 else
-    ROOT="$(dirname "$($READLINK -f "$(which "$0")")")"
+  ROOT="$(dirname "$($READLINK -f "$(which "$0")")")"
 fi
 
 REPO=""
@@ -28,22 +28,23 @@ SFX_STATE="state"
 GFI_OPTS=""
 
 if [ -z "${PYTHON}" ]; then
-    # $PYTHON is not set, so we try to find a working python with mercurial:
-    for python_cmd in python2 python python3; do
-        if command -v $python_cmd > /dev/null; then
-            $python_cmd -c 'from mercurial.scmutil import revsymbol' 2> /dev/null
-            # shellcheck disable=SC2181
-            if [ $? -eq 0 ]; then
-                PYTHON=$python_cmd
-                break
-            fi
-        fi
-    done
+  # $PYTHON is not set, so we try to find a working python with mercurial:
+  for python_cmd in python2 python python3; do
+    if command -v $python_cmd > /dev/null; then
+      $python_cmd -c 'from mercurial.scmutil import revsymbol' 2> /dev/null
+      # shellcheck disable=SC2181
+      if [ $? -eq 0 ]; then
+        PYTHON=$python_cmd
+        break
+      fi
+    fi
+  done
 fi
+
 if [ -z "${PYTHON}" ]; then
-    echo "Could not find a python interpreter with the mercurial module >= 4.6 available. " \
-        "Please use the 'PYTHON' environment variable to specify the interpreter to use."
-    exit 1
+  echo "Could not find a python interpreter with the mercurial module >= 4.6 available. " \
+    "Please use the 'PYTHON' environment variable to specify the interpreter to use."
+  exit 1
 fi
 
 USAGE="[--quiet] [-r <repo>] [--force] [--ignore-unnamed-heads] [-m <max>] [-s] [--hgtags] [-A <file>] [-B <file>] [-T <file>] [-M <name>] [-o <name>] [--hg-hash] [-e <encoding>]"
@@ -54,57 +55,57 @@ GIT_DIR/$PFX-$SFX_STATE by default.
 Note: The argument order matters.
 
 Options:
-	--quiet   Passed to git-fast-import(1)
-	-r <repo> Mercurial repository to import
-	--force   Ignore validation errors when converting, and pass --force
-	          to git-fast-import(1)
-	-m <max>  Maximum revision to import
-	-s        Enable parsing Signed-off-by lines
-	--hgtags  Enable exporting .hgtags files
-	-A <file> Read author map from file
-	          (Same as in git-svnimport(1) and git-cvsimport(1))
-	-B <file> Read branch map from file
-	-T <file> Read tags map from file
-	-M <name> Set the default branch name (defaults to 'master')
-	-n        Do not perform built-in (broken in many cases) sanitizing
+  --quiet   Passed to git-fast-import(1)
+  -r <repo> Mercurial repository to import
+  --force   Ignore validation errors when converting, and pass --force
+            to git-fast-import(1)
+  -m <max>  Maximum revision to import
+  -s        Enable parsing Signed-off-by lines
+  --hgtags  Enable exporting .hgtags files
+  -A <file> Read author map from file
+            (Same as in git-svnimport(1) and git-cvsimport(1))
+  -B <file> Read branch map from file
+  -T <file> Read tags map from file
+  -M <name> Set the default branch name (defaults to 'master')
+  -n        Do not perform built-in (broken in many cases) sanitizing
                   of branch/tag names.
-	-o <name> Use <name> as branch namespace to track upstream (eg 'origin')
-	--hg-hash Annotate commits with the hg hash as git notes in the
+  -o <name> Use <name> as branch namespace to track upstream (eg 'origin')
+  --hg-hash Annotate commits with the hg hash as git notes in the
                   hg namespace.
-	-e <encoding> Assume commit and author strings retrieved from
-	              Mercurial are encoded in <encoding>
-	--fe <filename_encoding> Assume filenames from Mercurial are encoded
-	                         in <filename_encoding>
-	--mappings-are-raw Assume mappings are raw <key>=<value> lines
-	--filter-contents <cmd>  Pipe contents of each exported file through <cmd>
-	                         with <file-path> <hg-hash> <is-binary> as arguments
-	--plugin <plugin=init>  Add a plugin with the given init string (repeatable)
-	--plugin-path <plugin-path> Add an additional plugin lookup path
+  -e <encoding> Assume commit and author strings retrieved from
+                Mercurial are encoded in <encoding>
+  --fe <filename_encoding> Assume filenames from Mercurial are encoded
+                           in <filename_encoding>
+  --mappings-are-raw Assume mappings are raw <key>=<value> lines
+  --filter-contents <cmd>  Pipe contents of each exported file through <cmd>
+                           with <file-path> <hg-hash> <is-binary> as arguments
+  --plugin <plugin=init>  Add a plugin with the given init string (repeatable)
+  --plugin-path <plugin-path> Add an additional plugin lookup path
 "
 case "$1" in
-    -h|--help)
-      echo "usage: $(basename "$0") $USAGE"
-      echo ""
-      echo "$LONG_USAGE"
-      exit 0
+  -h|--help)
+    echo "usage: $(basename "$0") $USAGE"
+    echo ""
+    echo "$LONG_USAGE"
+    exit 0
 esac
 
 IS_BARE=$(git rev-parse --is-bare-repository) \
-    || (echo "Could not find git repo" ; exit 1)
+  || (echo "Could not find git repo" ; exit 1)
 if test "z$IS_BARE" != ztrue; then
-   # This is not a bare repo, cd to the toplevel
-   TOPLEVEL=$(git rev-parse --show-toplevel) \
-       || (echo "Could not find git repo toplevel" ; exit 1)
-   cd "$TOPLEVEL" || exit 1
+  # This is not a bare repo, cd to the toplevel
+  TOPLEVEL=$(git rev-parse --show-toplevel) \
+    || (echo "Could not find git repo toplevel" ; exit 1)
+  cd "$TOPLEVEL" || exit 1
 fi
-GIT_DIR=$(git rev-parse --git-dir) || (echo "Could not find git repo" ; exit 1)
 
+GIT_DIR=$(git rev-parse --git-dir) || (echo "Could not find git repo" ; exit 1)
 
 IGNORECASEWARN=""
 IGNORECASE=$(git config core.ignoreCase)
 if [ "true" = "$IGNORECASE" ]; then
-    IGNORECASEWARN="true"
-fi;
+  IGNORECASEWARN="true"
+fi
 
 
 while case "$#" in 0) break ;; esac
@@ -135,19 +136,19 @@ do
 done
 
 if [ -n "$IGNORECASEWARN" ]; then
-    echo "Error: The option core.ignoreCase is set to true in the git"
-    echo "repository. This will produce empty changesets for renames that just"
-    echo "change the case of the file name."
-    echo "Use --force to skip this check or change the option with"
-    echo "git config core.ignoreCase false"
-    exit 1
+  echo "Error: The option core.ignoreCase is set to true in the git"
+  echo "repository. This will produce empty changesets for renames that just"
+  echo "change the case of the file name."
+  echo "Use --force to skip this check or change the option with"
+  echo "git config core.ignoreCase false"
+  exit 1
 fi;
 
 # Make a backup copy of each state file
 for i in $SFX_STATE $SFX_MARKS $SFX_MAPPING $SFX_HEADS ; do
-    if [ -f "$GIT_DIR/$PFX-$i" ] ; then
-	cp "$GIT_DIR/$PFX-$i" "$GIT_DIR/$PFX-$i~"
-    fi
+  if [ -f "$GIT_DIR/$PFX-$i" ] ; then
+    cp "$GIT_DIR/$PFX-$i" "$GIT_DIR/$PFX-$i~"
+  fi
 done
 
 # for convenience: get default repo from state file
@@ -157,8 +158,8 @@ if [ "$REPO" = -f "$GIT_DIR/$PFX-$SFX_STATE" ] ; then
 fi
 
 if [  -z "$REPO" ]; then
-    echo "no repo given, use -r flag"
-    exit 1
+  echo "no repo given, use -r flag"
+  exit 1
 fi
 
 # make sure we have a marks cache
